@@ -93,3 +93,52 @@ def repo_dir(repo, *path, mkdir=False):
     else:
         return None
 
+
+def repo_create(path):
+
+    repo = GitRepository(path, force=True)
+
+    if os.path.exists(repo.worktree):
+        # check if the path is a directory (the path could point to a file...)
+        if not os.path.isdir(repo.worktree):
+            raise Exception("Is not a directory" % path)
+        
+        # check if the gitdir is already created and configured
+        if os.path.exists(repo.gitdir) and os.listdir(repo.gitdir):
+            raise Exception("is not empty"  % path)
+    else:
+        os.makedirs(repo.worktree)
+        
+    assert repo_dir(repo, "branches", mkdir=True)
+    assert repo_dir(repo, "objects", mkdir=True)
+    assert repo_dir(repo, "refs", "tags", mkdir=True)
+    assert repo_dir(repo, "refs", "heads", mkdir=True)
+
+    #create the description file
+    with open(repo_file(repo, "description"), "w") as f:
+        f.write("Unnamed repository; edit this file 'description' to name the repository.\n")
+
+    #create the HEAD file
+    with open(repo_file(repo, "HEAD", "w")) as f:
+        f.write("ref: refs/heads/master\n")
+    
+    #create the config file
+    with open(repo_file(repo, "config"), "w") as f:
+        config = repo_default_config()
+        config.write(f)
+
+    return repo
+
+
+def repo_default_config():
+    conf = configparser.ConfigParser()
+
+    #adding core section
+    conf.add_section("core")
+
+    #adding our configuration
+    conf.set("core", "repositoryformatsection", "0")
+    conf.set("core", "filemode" "false")
+    conf.set("core", "bare", "false")
+
+    return conf
