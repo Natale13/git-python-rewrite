@@ -119,7 +119,7 @@ def repo_create(path):
         f.write("Unnamed repository; edit this file 'description' to name the repository.\n")
 
     #create the HEAD file
-    with open(repo_file(repo, "HEAD", "w")) as f:
+    with open(repo_file(repo, "HEAD"), "w") as f:
         f.write("ref: refs/heads/master\n")
     
     #create the config file
